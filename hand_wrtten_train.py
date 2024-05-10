@@ -87,7 +87,7 @@ def load_test_labels(idx_ubyte_file=test_labels_idx1_ubyte_file):
 
 
 # 构建网络部分
-class Residual(nn.Module):
+class Residual(nn.Module):  # 本类已保存在d2lzh_pytorch包中方便以后使用
     def __init__(self, in_channels, out_channels, use_1x1conv=False, stride=1):
         super(Residual, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, stride=stride)
@@ -202,7 +202,7 @@ if __name__ == '__main__':
 
     # 训练
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    lr, num_epochs = 0.001, 1
+    lr, num_epochs = 0.00001, 100
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     batch_size = 1000
     net = net.to(device)
