@@ -202,7 +202,7 @@ if __name__ == '__main__':
 
     # 训练
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    lr, num_epochs = 0.001, 2
+    lr, num_epochs = 0.00001, 100
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     batch_size = 1000
     net = net.to(device)
