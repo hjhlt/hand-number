@@ -1,18 +1,15 @@
-# author:Hurricane
-# date:  2020/11/6
-# E-mail:hurri_cane@qq.com
-
-
 import cv2 as cv
 import numpy as np
 import os
 
 
 def get_number(img):
-
-    img_gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-    img_gray_resize = cv.resize(img_gray, (600, 600))
-    ret, img_bw = cv.threshold(img_gray_resize, 200, 255, cv.THRESH_BINARY)
+    img_gray = img
+    if len(img.shape) == 3 and img.shape[2] == 3:
+        img_gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+    img_gray_resize = cv.resize(img_gray, (700, 700))
+    ret, img_bw = cv.threshold(img_gray_resize, 120, 255, cv.THRESH_BINARY)
+    img_bw = cv.bitwise_not(img_bw)
     kernel = np.ones((3, 3), np.uint8)
     # img_open = cv.morphologyEx(img_bw,cv.MORPH_CLOSE,kernel)
     img_open = cv.dilate(img_bw, kernel, iterations=2)
@@ -22,6 +19,7 @@ def get_number(img):
         if sta[4] < 1000:
             cv.rectangle(img_open, tuple(sta[0:2]), tuple(sta[0:2] + sta[2:4]), (0, 0, 255), thickness=-1)
     return img_open
+
 
 def get_roi(img_bw):
     img_bw_c = img_bw.sum(axis=1) / 255
@@ -35,7 +33,7 @@ def get_roi(img_bw):
         for k, c in enumerate(img_bw_c):
             if c >= 5:
                 c_ind.append(k)
-        if len(r_ind)==0 or len(c_ind)==0:
+        if len(r_ind) == 0 or len(c_ind) == 0:
             return img_bw
         img_bw_sg = img_bw[c_ind[0]:c_ind[-1], r_ind[0]:r_ind[-1]]
         leng_c = len(c_ind)
@@ -51,6 +49,7 @@ def get_roi(img_bw):
         return img_bw_sg_bord
     else:
         return img_bw
+
 
 def softmax(X):
     X_exp = X.exp()
