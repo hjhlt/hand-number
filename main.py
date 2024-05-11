@@ -1,7 +1,3 @@
-# author:Hurricane
-# date:  2020/11/6
-# E-mail:hurri_cane@qq.com
-
 import cv2 as cv
 import numpy as np
 import os
@@ -30,26 +26,36 @@ net = pt.get_net()
 # cv.waitKey(0)
 
 root = tkinter.Tk()
-root.geometry("1600x900")
+root.geometry("1280x720")
 root.resizable(False, False)
 root.title('手写数字识别系统')
 video = cv.VideoCapture(0)
 res = video.set(3, 1280)
-label1 = tkinter.Label(root, text='原图像')
-label2 = tkinter.Label(root, text='预处理后的图像')
-
-label1.place(x=0, y=0)
-label2.place(x=900, y=0)
+label_font = font.Font(size=17, weight='bold')
+label1 = tkinter.Label(root, text='原图像', font=label_font)
+label2 = tkinter.Label(root, text='预处理后的图像', font=label_font)
+label1.place(x=250, y=110)
+label2.place(x=700, y=110)
+default_img = np.zeros((400, 400))
+default_img = Image.fromarray(default_img)
+default_img = ImageTk.PhotoImage(default_img)
+title_font = font.Font(size=25, weight='bold')
+title = tkinter.Label(root, text="手写数字识别", font=title_font)
+title.place(x=550, y=50)
 # 创建label标签
-image1 = tkinter.Label(root, text=' ', width=700, height=700)
-image1.place(x=0, y=25, width=700, height=700)
+image1 = tkinter.Label(root, text=' ', width=400, height=400)
+image1.place(x=250, y=150, width=400, height=400)
+image1.image = default_img
+image1['image'] = default_img
 
-image2 = tkinter.Label(root, text=' ', width=700, height=700)
-image2.place(x=900, y=25, width=700, height=700)
+image2 = tkinter.Label(root, text=' ', width=400, height=400)
+image2.place(x=700, y=150, width=400, height=400)
+image2.image = default_img
+image2['image'] = default_img
 
-my_font = font.Font(size=15)
-ans = tkinter.Label(root, text='未识别到数字', font=my_font)
-ans.place(x=10, y=775, width=200, height=100)
+my_font = font.Font(size=20, weight='bold')
+ans = tkinter.Label(root, text='预测结果为: 未识别到数字', font=my_font)
+ans.place(x=300, y=600, width=900, height=100)
 
 cnt = 0
 mode = 0
@@ -85,6 +91,7 @@ def open_image():
     global image1
     global image2
     global ans
+    global ans_num
     global cnt
     global mode
     # 使用filedialog打开文件选择对话框
@@ -96,7 +103,8 @@ def open_image():
         # 使用BICUBIC作为重采样过滤器
         img = img.resize((700, 700), Image.BICUBIC)
         # 将PIL Image对象转换为Tkinter可以显示的PhotoImage对象
-        photo = ImageTk.PhotoImage(img)
+        photo = img.resize((400, 400), Image.BICUBIC)
+        photo = ImageTk.PhotoImage(photo)
 
         img = np.array(img)
         img2 = g_n(img)
@@ -105,6 +113,7 @@ def open_image():
         img2 = maxPool(img2)
         # img_in = img2
         img2 = enlarge(img2)
+        img2 = cv.resize(img2, (400, 400))
         image = Image.fromarray(img2)
         image = ImageTk.PhotoImage(image)
 
@@ -116,9 +125,10 @@ def open_image():
         if best_result_num <= 0.5:
             best_result = None
         if best_result is not None:
-            ans.config(text="数字为" + str(best_result) + str(best_result_num))
+            ans.config(text="预测结果为: 数字为" + str(best_result) + " , " + "模型预测概率为" + str(
+                "{:.3f}".format(best_result_num * 100)) + "%")
         else:
-            ans.config(text="未识别到数字")
+            ans.config(text="预测结果为: 未识别到数字")
 
         # 将上传的图片显示到窗口中
         image1.image = photo
@@ -138,6 +148,7 @@ def imshow():
     global image1
     global image2
     global ans
+    global ans_num
     global cnt
     global mode
     r, img = video.read()
@@ -166,15 +177,17 @@ def imshow():
         best_result = result.argmax(dim=1).item()
         best_result_num = max(max(result)).cpu().detach().numpy()
         if best_result_num > 0.9:
-            ans.config(text="数字为" + str(best_result))
+            ans.config(text="预测结果为: 数字为" + str(best_result) + " , " + "模型预测概率为" + str(
+                "{:.3f}".format(best_result_num * 100)) + "%")
             cnt = 0
         else:
             cnt += 1
         if cnt > 60:
-            ans.config(text="未识别到数字")
+            ans.config(text="预测结果为: 未识别到数字")
 
     # 创建一个定时器，每10ms进入一次函数
     root.after(50, imshow)
+
 
 def start():
     global mode
@@ -183,10 +196,20 @@ def start():
     if first == 1:
         imshow()
         first = 0
-btn_open = tkinter.Button(root, text="上传图片", command=open_image)
-btn_open.place(x=1200, y=800, width=100, height=50)
-btn_video = tkinter.Button(root, text="使用摄像头捕捉", command=start)
-btn_video.place(x=1350, y=800, width=100, height=50)
+
+
+def finish():
+    global root
+    root.destroy()
+
+
+button_font = font.Font(size=13, weight='bold')
+btn_open = tkinter.Button(root, text="上传图片", command=open_image, font=button_font)
+btn_open.place(x=50, y=225, width=150, height=75)
+btn_video = tkinter.Button(root, text="使用摄像头捕捉", command=start, font=button_font)
+btn_video.place(x=50, y=350, width=150, height=75)
+btn_quit = tkinter.Button(root, text="退出", command=finish, font=button_font)
+btn_quit.place(x=50, y=475, width=150, height=75)
 
 # while (True):
 #     ret, frame = capture.read()

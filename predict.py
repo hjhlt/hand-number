@@ -1,9 +1,4 @@
-# author:Hurricane
-# date:  2020/11/5
-# E-mail:hurri_cane@qq.com
-# -------------------------------------#
-#       对单张图片进行预测
-# -------------------------------------#
+
 import numpy as np
 import struct
 import matplotlib.pyplot as plt

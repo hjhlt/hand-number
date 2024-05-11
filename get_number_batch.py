@@ -1,6 +1,4 @@
-# author:Hurricane
-# date:  2020/11/5
-# E-mail:hurri_cane@qq.com
+
 
 import cv2 as cv
 import numpy as np

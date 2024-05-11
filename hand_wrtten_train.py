@@ -1,7 +1,4 @@
 
-# author:Hurricane
-# date:  2020/11/4
-# E-mail:hurri_cane@qq.com
 
 import numpy as np
 import struct
@@ -87,7 +84,7 @@ def load_test_labels(idx_ubyte_file=test_labels_idx1_ubyte_file):
 
 
 # 构建网络部分
-class Residual(nn.Module):  # 本类已保存在d2lzh_pytorch包中方便以后使用
+class Residual(nn.Module):
     def __init__(self, in_channels, out_channels, use_1x1conv=False, stride=1):
         super(Residual, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, stride=stride)
@@ -106,16 +103,6 @@ class Residual(nn.Module):  # 本类已保存在d2lzh_pytorch包中方便以后�
             X = self.conv3(X)
         return F.relu(Y + X)
 
-
-class GlobalAvgPool2d(nn.Module):
-    # 全局平均池化层可通过将池化窗口形状设置成输入的高和宽实现
-    def __init__(self):
-        super(GlobalAvgPool2d, self).__init__()
-
-    def forward(self, x):
-        return F.avg_pool2d(x, kernel_size=x.size()[2:])
-
-
 def resnet_block(in_channels, out_channels, num_residuals, first_block=False):
     # num_residuals:残差数
     if first_block:
@@ -127,6 +114,14 @@ def resnet_block(in_channels, out_channels, num_residuals, first_block=False):
         else:
             blk.append(Residual(out_channels, out_channels))
     return nn.Sequential(*blk)
+
+class GlobalAvgPool2d(nn.Module):
+    # 全局平均池化层可通过将池化窗口形状设置成输入的高和宽实现
+    def __init__(self):
+        super(GlobalAvgPool2d, self).__init__()
+
+    def forward(self, x):
+        return F.avg_pool2d(x, kernel_size=x.size()[2:])
 
 
 def evaluate_accuracy(img, label, net):
@@ -202,14 +197,14 @@ if __name__ == '__main__':
 
     # 训练
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    lr, num_epochs = 0.00001, 100
+    lr, num_epochs = 0.0005, 100
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     batch_size = 1000
     net = net.to(device)
 
     print("training on ", device)
     loss = torch.nn.CrossEntropyLoss()
-    loop_times = round(60000 / batch_size)
+    loop_times = round(60000 / batch_size)+1
     train_acc_plot = []
     test_acc_plot = []
     loss_plot = []
